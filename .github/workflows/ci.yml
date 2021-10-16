@@ -1,0 +1,30 @@
+name: CI
+
+on: [ push ]
+
+env:
+  GOLANGCI_LINT_VERSION: "v1.42.1"
+  GOLANG_VERSION: "1.16.x"
+
+jobs:
+  test_and_build:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Go ${{ env.GOLANG_VERSION }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+
+      - name: Golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+
+      - name: Run Tests
+        run: go test -race -v -covermode=atomic ./...
+
+      - name: Build
+        id: build-image
+        run: docker build
