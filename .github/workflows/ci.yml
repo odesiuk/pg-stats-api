@@ -26,4 +26,4 @@ jobs:
 
       - name: Build
         id: build-image
-        run: docker build
+        run: docker build .
