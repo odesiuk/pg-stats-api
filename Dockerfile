@@ -1,16 +1,16 @@
 FROM golang:alpine AS build
 
-ENV GO111MODULE=on
-ENV CGO_ENABLED=0
+RUN mkdir /app
+WORKDIR /app
 
 COPY go.mod .
 COPY go.sum .
 
 RUN go mod download
 
-COPY ./ .
+COPY . .
 
-RUN go build -a -o /app/pg-stats-api
+RUN GO111MODULE=on CGO_ENABLED=0 go build -a -o pg-stats-api
 
 ## ----
 FROM alpine AS runtime
