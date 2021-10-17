@@ -3,6 +3,7 @@ package rest
 import (
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 // ErrWithHint custom error for ErrorHandler.
@@ -23,10 +24,10 @@ func (e *ErrWithHint) WithErr(err error) *ErrWithHint {
 	return e
 }
 
-func ErrBadRequestInvalidParameter(name string) *ErrWithHint {
+func ErrBadRequestInvalidParameter(name string, description ...string) *ErrWithHint {
 	return &ErrWithHint{
 		Code:    http.StatusBadRequest,
-		Message: fmt.Sprintf("Invalid parameter '%s'", name),
+		Message: fmt.Sprintf("Invalid parameter '%s'. %s", name, strings.Join(description, ".")),
 		Field:   name,
 	}
 }
