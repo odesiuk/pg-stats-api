@@ -1,24 +1,20 @@
 package rest
 
 import (
+	"fmt"
 	"strconv"
-	"time"
-)
-
-const (
-	dateFormat = "2006-01-02"
-	uintBase   = 10
+	"strings"
 )
 
 type (
-	FnGetter func(string) string
+	FnGetter func(key string, defaultValue ...string) string
 
 	ParamGetter interface {
-		Param(string) string
+		Params(key string, defaultValue ...string) string
 	}
 
-	QueryParamGetter interface {
-		QueryParam(string) string
+	QueryGetter interface {
+		Query(key string, defaultValue ...string) string
 	}
 
 	Parser struct {
@@ -27,11 +23,11 @@ type (
 )
 
 func Param(s ParamGetter) *Parser {
-	return &Parser{source: s.Param}
+	return &Parser{source: s.Params}
 }
 
-func QueryParam(s QueryParamGetter) *Parser {
-	return &Parser{source: s.QueryParam}
+func QueryParam(s QueryGetter) *Parser {
+	return &Parser{source: s.Query}
 }
 
 func (p *Parser) StringFromEnum(name string, enum []string) (string, error) {
@@ -42,7 +38,10 @@ func (p *Parser) StringFromEnum(name string, enum []string) (string, error) {
 		}
 	}
 
-	return "", ErrBadRequestInvalidParameter(name)
+	return "", ErrBadRequestInvalidParameter(name, fmt.Sprintf(
+		"Available values: %s",
+		strings.Join(enum, ", "),
+	))
 }
 
 func (p *Parser) String(name string) (string, error) {
@@ -52,32 +51,6 @@ func (p *Parser) String(name string) (string, error) {
 	}
 
 	return "", ErrBadRequestInvalidParameter(name)
-}
-
-func (p *Parser) StringOrDefault(name, def string) string {
-	if val := p.source(name); val != "" {
-		return val
-	}
-
-	return def
-}
-
-func (p *Parser) Int(name string) (int, error) {
-	intVal, err := strconv.Atoi(p.source(name))
-	if err == nil {
-		return intVal, nil
-	}
-
-	return 0, ErrBadRequestInvalidParameter(name)
-}
-
-func (p *Parser) Uint64(name string) (uint64, error) {
-	n, err := strconv.ParseUint(p.source(name), uintBase, 64)
-	if err != nil {
-		return 0, ErrBadRequestInvalidParameter(name).WithErr(err)
-	}
-
-	return n, nil
 }
 
 func (p *Parser) IntOrDefault(name string, def int) (int, error) {
@@ -94,16 +67,29 @@ func (p *Parser) IntOrDefault(name string, def int) (int, error) {
 	return 0, ErrBadRequestInvalidParameter(name).WithErr(err)
 }
 
-func (p *Parser) DateOrDefault(name string, def time.Time) (time.Time, error) {
-	val := p.source(name)
-	if val == "" {
-		return def, nil
+func (p *Parser) SimplePagination() (SimplePaginationParams, error) {
+	var (
+		err error
+		pag = SimplePaginationParams{Page: DefaultPage}
+	)
+
+	page := p.source(PaginationParamPage)
+	if page == "" {
+		return pag, nil
 	}
 
-	dateVal, err := time.Parse(dateFormat, val)
-	if err == nil {
-		return dateVal, nil
+	pag.Page, err = strconv.Atoi(page)
+	if err != nil {
+		return pag, ErrBadRequestInvalidParameter(PaginationParamPage).WithErr(err)
 	}
 
-	return time.Time{}, ErrBadRequestInvalidParameter(name).WithErr(err)
+	pag.Limit = DefaultLimit
+	if limit := p.source(PaginationParamLimit); limit != "" {
+		pag.Limit, err = strconv.Atoi(limit)
+		if err != nil {
+			return pag, ErrBadRequestInvalidParameter(PaginationParamLimit).WithErr(err)
+		}
+	}
+
+	return pag, nil
 }

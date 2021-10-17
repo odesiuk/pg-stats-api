@@ -5,9 +5,8 @@ type H map[string]interface{}
 
 // Pagination ...
 type Pagination struct {
-	NextCursor string `json:"next_cursor"`
-	Total      int64  `json:"total"`
-	PageSize   int    `json:"page_size"`
+	Page     int `json:"page"`
+	PageSize int `json:"page_size"`
 }
 
 // ErrorResponse defines the body of an error response.
