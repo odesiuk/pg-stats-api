@@ -15,7 +15,7 @@ type ErrWithHint struct {
 }
 
 func (e ErrWithHint) Error() string {
-	return fmt.Sprintf("%d: %s | Err: %v", e.Code, e.Message, e.Err)
+	return fmt.Sprintf("%d: %s", e.Code, e.Message)
 }
 
 func (e *ErrWithHint) WithErr(err error) *ErrWithHint {

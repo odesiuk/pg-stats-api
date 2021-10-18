@@ -18,6 +18,6 @@ type ErrorResponse struct {
 // ResponseWithPayload common response with any data in Payload field.
 type ResponseWithPayload struct {
 	Message    string      `json:"message,omitempty"`
-	Pagination *Pagination `json:"pagination,omitempty"`
+	Pagination Pagination  `json:"pagination,omitempty"`
 	Payload    interface{} `json:"payload,omitempty"`
 }

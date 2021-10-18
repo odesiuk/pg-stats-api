@@ -4,15 +4,19 @@ import (
 	"log"
 
 	"github.com/odesiuk/pg-stats-api/cmd"
+	"github.com/odesiuk/pg-stats-api/pkg/db"
 )
 
 func main() {
 	// get config from ENV.
 	cfg := cmd.ParseConfigFromENV()
 
-	if err := cmd.Start(cfg); err != nil {
-		log.Fatal(err)
+	// get DB connection.
+	dbConn, err := db.NewConnectionFromENV("PG")
+	if err != nil {
+		log.Fatal("DB connection ERROR:", err)
 	}
 
-	log.Println("Exit without error")
+	app := cmd.Setup(dbConn, cfg)
+	log.Println("Exit", app.Listen(":"+cfg.Port))
 }

@@ -6,12 +6,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/odesiuk/pg-stats-api/internal/query"
 	"github.com/odesiuk/pg-stats-api/internal/storage/repositories"
-	"github.com/odesiuk/pg-stats-api/pkg/db"
 	"github.com/odesiuk/pg-stats-api/pkg/rest"
+	"gorm.io/gorm"
 )
 
-// Start setup API service.
-func Start(cfg Config) error {
+// Setup configure API service.
+func Setup(db *gorm.DB, cfg Config) *fiber.App {
 	app := fiber.New(fiber.Config{
 		// add custom errors.
 		ErrorHandler: rest.ErrorHandler,
@@ -23,39 +23,24 @@ func Start(cfg Config) error {
 	// request logger middleware.
 	app.Use(logger.New())
 
-	if err := setup(app, cfg); err != nil {
-		return err
-	}
+	// init controllers.
+	qc := query.NewController(
+		repositories.NewPgStatStatementRepo(db),
+		cfg.MinQueryDuration,
+	)
 
-	return app.Listen(":" + cfg.Port)
+	// add routes.
+	app.Get("/", index(cfg))
+	app.Get("/queries", qc.GetAll)
+
+	return app
 }
 
-// healthcheck returns service name.
-func healthcheck(cfg Config) fiber.Handler {
+// index returns service name.
+func index(cfg Config) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		return ctx.JSON(rest.H{
 			"name": cfg.AppName,
 		})
 	}
-}
-
-// setup init.
-func setup(app *fiber.App, cfg Config) error {
-	// get DB connection.
-	dbConn, err := db.NewConnectionFromENV("PG")
-	if err != nil {
-		return err
-	}
-
-	// init controllers.
-	qc := query.NewController(
-		repositories.NewPgStatStatementRepo(dbConn),
-		cfg.MinQueryDuration,
-	)
-
-	// add routes.
-	app.Get("/healthcheck", healthcheck(cfg))
-	app.Get("/queries", qc.GetAll)
-
-	return nil
 }

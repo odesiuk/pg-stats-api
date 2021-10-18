@@ -9,10 +9,6 @@ import (
 type (
 	FnGetter func(key string, defaultValue ...string) string
 
-	ParamGetter interface {
-		Params(key string, defaultValue ...string) string
-	}
-
 	QueryGetter interface {
 		Query(key string, defaultValue ...string) string
 	}
@@ -22,16 +18,16 @@ type (
 	}
 )
 
-func Param(s ParamGetter) *Parser {
-	return &Parser{source: s.Params}
-}
-
 func QueryParam(s QueryGetter) *Parser {
 	return &Parser{source: s.Query}
 }
 
-func (p *Parser) StringFromEnum(name string, enum []string) (string, error) {
+func (p *Parser) StringFromEnum(name string, enum []string, defaultVal ...string) (string, error) {
 	val := p.source(name)
+	if val == "" && len(defaultVal) > 0 {
+		return defaultVal[0], nil
+	}
+
 	for _, s := range enum {
 		if val == s {
 			return s, nil
@@ -42,29 +38,6 @@ func (p *Parser) StringFromEnum(name string, enum []string) (string, error) {
 		"Available values: %s",
 		strings.Join(enum, ", "),
 	))
-}
-
-func (p *Parser) String(name string) (string, error) {
-	val := p.source(name)
-	if val != "" {
-		return val, nil
-	}
-
-	return "", ErrBadRequestInvalidParameter(name)
-}
-
-func (p *Parser) IntOrDefault(name string, def int) (int, error) {
-	val := p.source(name)
-	if val == "" {
-		return def, nil
-	}
-
-	intVal, err := strconv.Atoi(val)
-	if err == nil {
-		return intVal, nil
-	}
-
-	return 0, ErrBadRequestInvalidParameter(name).WithErr(err)
 }
 
 func (p *Parser) SimplePagination() (SimplePaginationParams, error) {
