@@ -46,14 +46,11 @@ func (p *Parser) SimplePagination() (SimplePaginationParams, error) {
 		pag = SimplePaginationParams{Page: DefaultPage}
 	)
 
-	page := p.source(PaginationParamPage)
-	if page == "" {
-		return pag, nil
-	}
-
-	pag.Page, err = strconv.Atoi(page)
-	if err != nil {
-		return pag, ErrBadRequestInvalidParameter(PaginationParamPage).WithErr(err)
+	if page := p.source(PaginationParamPage); page != "" {
+		pag.Page, err = strconv.Atoi(page)
+		if err != nil {
+			return pag, ErrBadRequestInvalidParameter(PaginationParamPage).WithErr(err)
+		}
 	}
 
 	pag.Limit = DefaultLimit
