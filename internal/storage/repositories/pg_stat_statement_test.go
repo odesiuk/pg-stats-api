@@ -109,7 +109,7 @@ func TestPgStatStatementRepo_GetByType(t *testing.T) {
 
 			tt.mock(mock)
 
-			got, err := PgStatStatementRepo{db: db}.GetByType(
+			got, err := NewPgStatStatementRepo(db).GetByType(
 				tt.args.minExecTime,
 				tt.args.qType,
 				tt.args.timeSpentSort,

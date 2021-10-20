@@ -105,10 +105,7 @@ func TestController_GetAll(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			c := Controller{
-				repo:             tt.repo,
-				minQueryDuration: 2000,
-			}
+			c := NewController(tt.repo, 2000)
 
 			q := make(url.Values)
 			for key, value := range tt.queryParams {
@@ -123,6 +120,7 @@ func TestController_GetAll(t *testing.T) {
 			if err != nil {
 				assert.IsType(t, tt.expErr, err)
 				assert.Equal(t, tt.expErr.Error(), err.Error())
+
 				return
 			}
 

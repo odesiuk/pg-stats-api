@@ -30,5 +30,5 @@ func (r PgStatStatementRepo) GetByType(minExecTime uint64, qType string, timeSpe
 		q = q.Order(fmt.Sprintf("max_exec_time %s", timeSpentSort))
 	}
 
-	return statements, q.Find(&statements).Error
+	return statements, q.Debug().Find(&statements).Error
 }

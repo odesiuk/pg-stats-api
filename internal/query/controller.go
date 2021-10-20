@@ -42,7 +42,7 @@ func (c Controller) GetAll(ctx *fiber.Ctx) error {
 	p := rest.QueryParam(ctx)
 
 	// parse statement type param.
-	qType, err := p.StringFromEnum(FilterParamType, statementTypesEnum, "")
+	qType, err := p.StringFromEnum(FilterParamType, statementTypesEnum)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (c Controller) GetAll(ctx *fiber.Ctx) error {
 	}
 
 	// parse time_spent sort param.
-	sort, err := p.StringFromEnum(SortParam, sortEnum, "")
+	sort, err := p.StringFromEnum(SortParam, sortEnum)
 	if err != nil {
 		return err
 	}

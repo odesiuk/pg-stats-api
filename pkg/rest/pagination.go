@@ -3,7 +3,6 @@ package rest
 const (
 	PaginationParamPage  = "page"
 	PaginationParamLimit = "limit"
-	DefaultLimit         = 10
 	DefaultPage          = 1
 )
 
